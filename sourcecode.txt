@@ -1,0 +1,584 @@
+//app.blade.php
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aplikasi Donasi Online</title>
+
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .navbar-brand {
+            font-weight: bold;
+            color: #28a745 !important;
+        }
+        .hero-section {
+            background: #28a745;
+            color: white;
+            padding: 60px 0;
+        }
+    </style>
+</head>
+
+<body>
+
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary mb-4">
+    <div class="container">
+        <a class="navbar-brand" href="{{ url('/') }}">
+            Sistem Donasi Kita
+        </a>
+
+        <button 
+            class="navbar-toggler" 
+            type="button" 
+            data-bs-toggle="collapse" 
+            data-bs-target="#navbarNav"
+        >
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto">
+                
+                <li class="nav-item">
+                    <a 
+                        class="nav-link {{ Request::is('/') ? 'active' : '' }}" 
+                        href="{{ url('/') }}"
+                    >
+                        Beranda
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a 
+                        class="nav-link {{ Request::is('donasi/create') ? 'active' : '' }}" 
+                        href="{{ route('donasi.create') }}"
+                    >
+                        Donasi Sekarang
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a 
+                        class="nav-link {{ Request::is('donasi') ? 'active' : '' }}" 
+                        href="{{ route('donasi.history') }}"
+                    >
+                        Riwayat Donasi
+                    </a>
+                </li>
+
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<!-- Konten -->
+<main class="py-4">
+    @yield('content')
+</main>
+
+<!-- Footer -->
+<footer class="text-center py-4 text-muted border-top bg-white">
+    <p>&copy; {{ date('Y') }} Aplikasi Donasi - Proyek PPLG SMK</p>
+</footer>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>
+
+
+//beranda.blade/php
+@extends('layouts.app')
+
+@section('content')
+<div class="container text-center">
+
+    <!-- HERO SECTION -->
+    <div class="hero-section rounded-3 shadow mb-5 py-5">
+        <h1 class="display-4 fw-bold">
+            Bantu Sesama, Ubah Dunia
+        </h1>
+
+        <p class="lead mt-3">
+            Platform donasi digital yang aman, transparan, dan terpercaya
+            untuk menyalurkan kebaikan Anda.
+        </p>
+
+        <a href="{{ route('donasi.create') }}" 
+           class="btn btn-light btn-lg px-5 mt-4 fw-bold text-success">
+            Donasi Sekarang
+        </a>
+    </div>
+
+    <!-- FITUR -->
+    <div class="row text-start mt-5">
+
+        <!-- MUDAH -->
+        <div class="col-md-4 mb-4">
+            <div class="card border-0 shadow-sm p-4 h-100">
+                <h3 class="fw-bold">Mudah</h3>
+                <p class="text-muted">
+                    Isi data singkat, pilih kategori, dan kirim donasi Anda
+                    dalam hitungan menit.
+                </p>
+            </div>
+        </div>
+
+        <!-- TRANSPARAN -->
+        <div class="col-md-4 mb-4">
+            <div class="card border-0 shadow-sm p-4 h-100">
+                <h3 class="fw-bold">Transparan</h3>
+                <p class="text-muted">
+                    Semua donasi yang masuk tercatat secara sistematis
+                    dalam laporan riwayat donasi.
+                </p>
+            </div>
+        </div>
+
+        <!-- BERMANFAAT -->
+        <div class="col-md-4 mb-4">
+            <div class="card border-0 shadow-sm p-4 h-100">
+                <h3 class="fw-bold">Bermanfaat</h3>
+                <p class="text-muted">
+                    Pilih kategori yang tepat untuk memastikan donasi Anda
+                    sampai ke pihak yang membutuhkan.
+                </p>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+@endsection
+
+
+//form_donasi.blade.php
+@extends('layouts.app')
+
+@section('content')
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm border-0">
+
+                <div class="card-header bg-white py-3">
+                    <h5 class="mb-0 fw-bold text-success">Lengkapi Form Donasi</h5>
+                </div>
+
+                <div class="card-body p-4">
+
+                    {{-- ERROR GLOBAL --}}
+                    @if ($errors->any())
+                        <div class="alert alert-danger">
+                            <ul class="mb-0">
+                                @foreach ($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    @endif
+
+                    <form action="{{ route('donasi.store') }}" method="POST">
+                        @csrf
+
+                        {{-- DATA DONATUR --}}
+                        <h6 class="text-muted mb-3 fw-bold text-uppercase" style="font-size: 0.8rem;">
+                            Informasi Donatur
+                        </h6>
+
+                        {{-- Nama --}}
+                        <div class="mb-3">
+                            <label class="form-label">Nama Lengkap</label>
+                            <input type="text" name="nama_donatur"
+                                   class="form-control @error('nama_donatur') is-invalid @enderror"
+                                   value="{{ old('nama_donatur') }}"
+                                   placeholder="Contoh: Budi Sudarsono" required>
+
+                            @error('nama_donatur')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        <div class="row">
+                            {{-- Email --}}
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Email</label>
+                                <input type="email" name="email"
+                                       class="form-control @error('email') is-invalid @enderror"
+                                       value="{{ old('email') }}"
+                                       placeholder="nama@email.com" required>
+
+                                @error('email')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+
+                            {{-- No HP --}}
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Nomor WhatsApp</label>
+                                <input type="text" name="no_hp"
+                                       class="form-control @error('no_hp') is-invalid @enderror"
+                                       value="{{ old('no_hp') }}"
+                                       placeholder="0812xxxx" required>
+
+                                @error('no_hp')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+                        </div>
+
+                        <hr class="my-4">
+
+                        {{-- DATA DONASI --}}
+                        <h6 class="text-muted mb-3 fw-bold text-uppercase" style="font-size: 0.8rem;">
+                            Detail Donasi
+                        </h6>
+
+                        {{-- Kategori --}}
+                        <div class="mb-3">
+                            <label class="form-label">Pilih Kategori Donasi</label>
+                            <select name="kategori_id"
+                                    class="form-select @error('kategori_id') is-invalid @enderror"
+                                    required>
+                                <option value="">-- Pilih Kategori --</option>
+                                @foreach($categories as $item)
+                                    <option value="{{ $item->id }}"
+                                        {{ old('kategori_id') == $item->id ? 'selected' : '' }}>
+                                        {{ $item->nama_kategori }}
+                                    </option>
+                                @endforeach
+                            </select>
+
+                            @error('kategori_id')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        {{-- Nominal --}}
+                        <div class="mb-3">
+                            <label class="form-label">Nominal Donasi (Rp)</label>
+                            <input type="number" name="nominal"
+                                   class="form-control @error('nominal') is-invalid @enderror"
+                                   value="{{ old('nominal') }}"
+                                   min="1"
+                                   placeholder="Contoh: 50000" required>
+
+                            @error('nominal')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        {{-- Pesan --}}
+                        <div class="mb-3">
+                            <label class="form-label">Pesan / Doa (Opsional)</label>
+                            <textarea name="pesan"
+                                      class="form-control @error('pesan') is-invalid @enderror"
+                                      rows="3"
+                                      placeholder="Tuliskan doa atau pesan...">{{ old('pesan') }}</textarea>
+
+                            @error('pesan')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        {{-- BUTTON --}}
+                        <div class="d-grid gap-2 mt-4">
+                            <button type="submit" class="btn btn-success btn-lg">
+                                Kirim Donasi
+                            </button>
+                            <a href="{{ route('home') }}" class="btn btn-light">
+                                Batal
+                            </a>
+                        </div>
+
+                    </form>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@endsection
+
+
+//index.blade.php
+@extends('layouts.app')
+
+@section('content')
+<div class="container py-5">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold">Riwayat Donasi Terbaru</h2>
+        <a href="{{ route('donasi.create') }}" class="btn btn-primary">
+            <i class="bi bi-plus-circle"></i> Donasi Sekarang
+        </a>
+    </div>
+
+    {{-- NOTIFIKASI --}}
+    @if(session('success'))
+        <div class="alert alert-success border-0 shadow-sm mb-4">
+            {{ session('success') }}
+        </div>
+    @endif
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="ps-4">No</th>
+                            <th>Donatur</th>
+                            <th>Kategori</th>
+                            <th>Nominal</th>
+                            <th>Tanggal</th>
+                            <th class="pe-4">Pesan</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        @forelse($donasi as $key => $item)
+                            <tr>
+                                <td class="ps-4">{{ $key + 1 }}</td>
+
+                                {{-- DONATUR --}}
+                                <td>
+                                    <div class="fw-bold">
+                                        {{ $item->donatur->nama_donatur ?? '-' }}
+                                    </div>
+                                    <small class="text-muted">
+                                        {{ $item->donatur->email ?? '-' }}
+                                    </small>
+                                </td>
+
+                                {{-- KATEGORI --}}
+                                <td>
+                                    <span class="badge bg-info text-dark">
+                                        {{ $item->kategori->nama_kategori ?? '-' }}
+                                    </span>
+                                </td>
+
+                                {{-- NOMINAL --}}
+                                <td class="fw-bold text-success">
+                                    Rp {{ number_format($item->nominal, 0, ',', '.') }}
+                                </td>
+
+                                {{-- TANGGAL --}}
+                                <td>
+                                    {{ \Carbon\Carbon::parse($item->tanggal_donasi)->translatedFormat('d F Y') }}
+                                </td>
+
+                                {{-- PESAN --}}
+                                <td class="pe-4">
+                                    <small class="text-secondary fst-italic">
+                                        "{{ $item->pesan ?? '-' }}"
+                                    </small>
+                                </td>
+                            </tr>
+
+                        @empty
+                            <tr>
+                                <td colspan="6" class="text-center py-5 text-muted">
+                                    Belum ada data donasi yang masuk.
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+
+                </table>
+
+            </div>
+        </div>
+    </div>
+
+</div>
+@endsection
+
+
+//DonasiController.php
+<?php
+
+namespace App\Http\Controllers;
+use App\Models\Donasi;
+use App\Models\Donatur;
+use App\Models\KategoriDonasi;
+use Illuminate\Http\Request;
+
+class DonasiController extends Controller
+{
+    public function index()
+    {
+        $daftarDonasi = Donasi::with(['donatur', 'kategori'])
+        ->latest()
+        ->get();
+
+        return view('beranda', compact('daftarDonasi'));
+    }
+
+    public function create()
+    {
+        $categories = KategoriDonasi::all();
+
+        return view('form_donasi', compact('categories'));
+    }
+
+    public function store(Request $request)
+    {
+        // Validasi input
+        $request->validate([
+            'nama_donatur' => 'required|string|max:255',
+            'email' => 'required|email|max:255',
+            'no_hp' => 'required|string|max:20',
+            'kategori_id' => 'required|exists:kategori,id',
+            'nominal' => 'required|integer|min:1',
+            'pesan' => 'nullable|string',
+        ]);
+
+        // Simpan data donatur
+        $donatur = Donatur::create([
+            'nama_donatur' => $request->nama_donatur,
+            'email' => $request->email,
+            'no_hp' => $request->no_hp,
+        ]);
+
+        // Simpan data donasi
+        Donasi::create([
+            'donatur_id' => $donatur->id,
+            'kategori_id' => $request->kategori_id,
+            'nominal' => $request->nominal,
+            'pesan' => $request->pesan,
+            'tanggal_donasi' => now(),
+        ]);
+
+        return redirect()->route('home')->with('success', 'Donasi berhasil disimpan!');
+    }
+
+    public function daftarDonasi()
+    {
+        $donasi = Donasi::with(['donatur', 'kategori'])->orderBy('tanggal_donasi', 'desc')->get();
+        return view('index', compact('donasi'));
+    }
+}
+
+//web.php
+<?php
+
+use App\Http\Controllers\DonasiController;
+use Illuminate\Support\Facades\Route;
+
+Route::get('/', [DonasiController::class, 'index'])->name('home');
+
+Route::get('/donasi/baru', [DonasiController::class, 'create'])->name('donasi.create');
+
+Route::post('/donasi/simpan', [DonasiController::class, 'store'])->name('donasi.store');
+
+Route::get('/donasi/riwayat', [DonasiController::class, 'daftarDonasi'])->name('donasi.history'); 
+
+//migration (kategori_donasi)
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        Schema::create('kategori', function (Blueprint $table) {
+            $table->id();
+            $table->string('nama_kategori');
+            $table->text('text')->nullable();
+            $table->timestamps();
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::dropIfExists('kategori');
+    }
+};
+
+
+//migration(donatur)
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        Schema::create('donatur', function (Blueprint $table) {
+            $table->id();
+            $table->string('nama_donatur');
+            $table->string('email');
+            $table->string('no_hp');
+            $table->timestamps();
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::dropIfExists('donatur');
+    }
+};
+
+
+//migration(donasi)
+
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        Schema::create('donasi', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('donatur_id')->constrained('donatur')->onDelete('cascade');
+            $table->foreignId('kategori_id')->constrained('kategori')->onDelete('cascade');
+            $table->integer('nominal');
+            $table->text('pesan');
+            $table->date('tanggal_donasi');
+            $table->timestamps();
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::dropIfExists('donasi');
+    }
+};
